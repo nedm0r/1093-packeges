@@ -2,22 +2,25 @@
 
 package_file="packages.txt"
 
-# Read package names from the file
+# Читаем имена пакетов из файла
 readarray -t packages < "$package_file"
 
-# Install Ubuntu packages using apt-get
-# Clone Git repositories
-# Install Python packages using pip or pip3
+# Устанавливаем пакеты Ubuntu с помощью apt
+# Клонируем Git-репозитории
+# Устанавливаем пакеты Python с помощью pip или pip3
 for package in "${packages[@]}"
 do
-    if [[ $package == *"/"* ]]; then
-        package_name=$(echo "$package" | awk -F'/' '{print $1}')
-        sudo apt-get install -y "$package_name"
-    elif [[ $package =~ ^git\+ ]]; then
-        repository=$(echo "$package" | cut -d'+' -f2-)
-        git clone "$repository" || true
-    elif [[ $package != "" ]]; then
-        sanitized_package=$(echo "$package" | tr -d '\r')
-        sudo pip install --no-deps "$sanitized_package" || true
+    package_name=$(echo "$package" | awk -F'\t' '{print $1}')
+    if [[ $package_name =~ ^git\+ ]]; then
+        repository=$(echo "$package_name" | cut -d'+' -f2-)
+        git clone "$repository"
+    else
+        if [[ $package_name == *":"* ]]; then
+            package_name=$(echo "$package_name" | cut -d':' -f1)
+        fi
+        sudo apt install -y "$package_name" || true
+        sudo apt-get install -y "$package_name" || true
+        pip install --no-deps "$package_name" || true
+        pip3 install --no-deps "$package_name" || true
     fi
 done
