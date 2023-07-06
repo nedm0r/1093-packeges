@@ -2,22 +2,22 @@
 
 package_file="packages.txt"
 
-# Read package names from the file
+# Читаем имена пакетов из файла
 readarray -t packages < "$package_file"
 
-# Install Ubuntu packages using apt-get
-# Clone Git repositories
-# Install Python packages using pip or pip3
+# Устанавливаем пакеты Ubuntu с помощью apt-get
+# Клонируем Git-репозитории
+# Устанавливаем пакеты Python с помощью pip или pip3
 for package in "${packages[@]}"
 do
     if [[ $package == *"/"* ]]; then
-        sanitized_package=$(echo "$package" | cut -d'/' -f1)  # Extract package name before the '/'
-        sudo apt-get install -y "$sanitized_package"
-    elif [[ $package == "git+"* ]]; then
-        repository=$(echo "$package" | cut -d'+' -f2)  # Extract repository URL after 'git+'
+        package_name=$(echo "$package" | awk -F'/' '{print $1}')
+        sudo apt-get install -y "$package_name"
+    elif [[ $package =~ ^git\+ ]]; then
+        repository=$(echo "$package" | cut -d'+' -f2-)
         git clone "$repository"
-    else
-        sanitized_package=$(echo "$package" | tr -d '\r')  # Remove carriage return if present
-        sudo pip install "$sanitized_package"  # Use 'pip3' if required
+    elif [[ $package != "" ]]; then
+        sanitized_package=$(echo "$package" | tr -d '\r')
+        sudo pip install "$sanitized_package"
     fi
 done
