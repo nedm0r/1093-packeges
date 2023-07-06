@@ -2,12 +2,12 @@
 
 package_file="packages.txt"
 
-# Читаем имена пакетов из файла
+# Read package names from the file
 readarray -t packages < "$package_file"
 
-# Устанавливаем пакеты Ubuntu с помощью apt-get
-# Клонируем Git-репозитории
-# Устанавливаем пакеты Python с помощью pip или pip3
+# Install Ubuntu packages using apt-get
+# Clone Git repositories
+# Install Python packages using pip or pip3
 for package in "${packages[@]}"
 do
     if [[ $package == *"/"* ]]; then
@@ -15,9 +15,9 @@ do
         sudo apt-get install -y "$package_name"
     elif [[ $package =~ ^git\+ ]]; then
         repository=$(echo "$package" | cut -d'+' -f2-)
-        git clone "$repository"
+        git clone "$repository" || true
     elif [[ $package != "" ]]; then
         sanitized_package=$(echo "$package" | tr -d '\r')
-        sudo pip install "$sanitized_package"
+        sudo pip install --no-deps "$sanitized_package" || true
     fi
 done
